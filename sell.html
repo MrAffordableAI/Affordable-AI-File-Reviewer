@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Affordable AI for property management companies</title>
+  <title>Affordable AI for companies and housing authorities</title>
   <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
@@ -15,19 +15,17 @@
         <h1>Sell the file review desk</h1>
       </div>
     </div>
-    <p class="lede">A property management company pays for the properties it manages. Managers drop the tenant file and get the corrections. This is a compliance aid, not an agency approval.</p>
-    <p><a href="index.html">Open the reviewer</a> · <a href="license.html">License terms</a></p>
+    <p class="lede">A large company can bolt it onto Yardi. A smaller company can use it with no property system. A housing authority can use it on the files it monitors. Same price sheet.</p>
+    <p><a href="index.html">Open the reviewer</a> · <a href="buyers.html">Who it is for</a> · <a href="license.html">License terms</a></p>
   </header>
   <main>
     <section class="panel">
-      <h2>What the company is buying</h2>
+      <h2>Who pays</h2>
       <ul class="stack">
-        <li>File review for Tax Credit, HUD, HOME, RD, and Section 202 in all 50 states.</li>
-        <li>Manager correction letter and the stacking order for that state agency.</li>
-        <li>Named seats for site managers and one compliance lead.</li>
-        <li>Use on the properties listed on the order. No resale of the tool.</li>
+        <li>Bolt-on: a company already on Yardi, RealPage, AppFolio, MRI, ResMan, or Entrata. The ledger stays there.</li>
+        <li>Independent: a smaller owner or manager. Drop the file. No Yardi and no setup.</li>
+        <li>Housing authority: properties it owns or monitors that use a TIC, HUD 50059, RD 3560-8, or HOME certification. Not a 50058 or PIC replacement.</li>
       </ul>
-      <p class="hint">Manual file review in this market runs about $150 to $300 a file. Full property-management systems charge about $3 to $5 a unit a month and still leave the file check to a person. Price this as the file check, not as a replacement for Yardi or RealPage.</p>
     </section>
     <section class="panel">
       <h2>Launch prices</h2>
@@ -35,26 +33,28 @@
         <article class="finding">
           <h3>Site desk</h3>
           <p>$199 per property each month.</p>
-          <p>One property, 5 manager seats, file reviews for that property.</p>
+          <p>One property. Fits a small company or a single authority property.</p>
         </article>
         <article class="finding">
           <h3>Portfolio</h3>
           <p>$149 per property each month.</p>
-          <p>6 or more properties on one annual order. Two months free if paid yearly.</p>
+          <p>6 or more properties. Two months free if paid yearly.</p>
         </article>
         <article class="finding">
-          <h3>Company</h3>
+          <h3>Company or authority</h3>
           <p>$99 per property each month.</p>
           <p>21 or more properties, named compliance lead, annual contract.</p>
         </article>
       </div>
-      <p class="hint">A 10-property portfolio at the portfolio rate is $1,490 a month, or $14,900 for the year if paid up front. A missed income error or a short lease can cost more than that at audit.</p>
     </section>
     <section class="panel">
-      <h2>Quote a company</h2>
+      <h2>Quote</h2>
       <div class="grid">
-        <label>Company name<input id="company" placeholder="Northfork Management" /></label>
-        <label>Properties on the order<input id="properties" type="number" value="8" min="1" /></label>
+        <label>Buyer<input id="company" placeholder="Northfork Management or the housing authority" /></label>
+        <label>Buyer type
+          <select id="kind"><option>Small company, no property system</option><option>Bolt-on to Yardi or another system</option><option>Housing authority</option></select>
+        </label>
+        <label>Properties on the order<input id="properties" type="number" value="3" min="1" /></label>
         <label>Billing
           <select id="term"><option value="month">Monthly</option><option value="year">Annual, 2 months free</option></select>
         </label>
@@ -62,34 +62,25 @@
       <p id="quote" class="lede"></p>
       <p><a id="send" class="go" style="display:inline-block; text-align:center; text-decoration:none; width:auto;">Email this quote</a></p>
     </section>
-    <section class="panel">
-      <h2>How a sale closes</h2>
-      <ol class="stack">
-        <li>Send the company the sample review and this price.</li>
-        <li>List the property names and states on the order.</li>
-        <li>Invoice the annual amount, or connect a card checkout when you are ready to take cards.</li>
-        <li>The company uses the reviewer for those properties only. The license terms govern the sale.</li>
-      </ol>
-      <p class="hint">Do not promise that a file will pass IHFA, HUD, USDA, or the IRS. The company remains responsible for the file.</p>
-    </section>
   </main>
   <script>
     const rate = (n) => n >= 21 ? 99 : n >= 6 ? 149 : 199;
-    const plan = (n) => n >= 21 ? "Company" : n >= 6 ? "Portfolio" : "Site desk";
+    const plan = (n) => n >= 21 ? "Company or authority" : n >= 6 ? "Portfolio" : "Site desk";
     function draw() {
       const n = Math.max(1, Number(document.getElementById("properties").value || 1));
       const yearly = document.getElementById("term").value === "year";
       const monthly = rate(n) * n;
       const amount = yearly ? monthly * 10 : monthly;
-      const text = plan(n) + " plan for " + n + " properties: $" + amount.toLocaleString("en-US") + (yearly ? " for the year." : " each month.");
+      const kind = document.getElementById("kind").value;
+      const text = kind + ". " + plan(n) + " for " + n + " properties: $" + amount.toLocaleString("en-US") + (yearly ? " for the year." : " each month.");
       document.getElementById("quote").textContent = text;
-      const company = document.getElementById("company").value || "Property management company";
+      const company = document.getElementById("company").value || "Buyer";
       const body = encodeURIComponent(company + "\n" + text + "\nProperties and states to list on the order:\n");
-      document.getElementById("send").href = "mailto:demesae@yahoo.com?subject=" + encodeURIComponent("Affordable AI company license") + "&body=" + body;
+      document.getElementById("send").href = "mailto:demesae@yahoo.com?subject=" + encodeURIComponent("Affordable AI license") + "&body=" + body;
     }
-    document.getElementById("properties").addEventListener("input", draw);
+    ["properties", "term", "kind", "company"].forEach((id) => document.getElementById(id).addEventListener("input", draw));
     document.getElementById("term").addEventListener("change", draw);
-    document.getElementById("company").addEventListener("input", draw);
+    document.getElementById("kind").addEventListener("change", draw);
     draw();
   </script>
 </body>
