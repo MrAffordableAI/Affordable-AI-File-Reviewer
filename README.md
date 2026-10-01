@@ -1,10 +1,10 @@
 # Affordable AI File Reviewer
 
-Manager drop-in reviewer for affordable housing tenant files. A manager drops the file, selects the programs on the unit, and gets the corrections needed to make the file match Tax Credit, HUD, HOME, RD, and Section 202 rules.
+Standalone manager drop-in reviewer for affordable housing tenant files. This repository is separate from the other MrAffordableAI projects.
 
-Live review: https://mraffordableai.github.io/affordable-ai/
+A manager drops the file, selects the programs on the unit, and gets the corrections needed to make the file match Tax Credit, HUD, HOME, RD, and Section 202 rules.
 
-Repo: https://github.com/MrAffordableAI/Affordable-AI-File-Reviewer
+Open the reviewer from this repo: https://github.com/MrAffordableAI/Affordable-AI-File-Reviewer
 
 ## What it checks
 
