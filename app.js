@@ -47,13 +47,37 @@ function docState() {
   return state;
 }
 
+function textHas(re, text) {
+  if (!text) return false;
+  const flags = re.flags.includes("g") ? re.flags : re.flags + "g";
+  const global = new RegExp(re.source, flags);
+  let match;
+  while ((match = global.exec(text))) {
+    const before = text.slice(Math.max(0, match.index - 32), match.index);
+    if (!/\b(no|not|missing|without|absent|lacks|is not|isn't)\b[^.]{0,24}$/i.test(before)) return true;
+    if (match.index === global.lastIndex) global.lastIndex += 1;
+  }
+  return false;
+}
+
 function renderDocs() {
   const programs = selectedPrograms();
   const previous = docState();
   const docs = RULES.documents.filter((d) => d.programs.some((p) => programs.includes(p)));
   $("docList").innerHTML = docs.map((d) => {
-    const detected = d.detect.some((re) => re.test(extractedText) || re.test(fileNames.join(" ")));
-    const checked = previous[d.id] || detected;
+    const detected = d.detect.some((re) => textHas(re, extractedText) || textHas(re, fileNames.join(" ")));
+    const denied = d.detect.some((re) => {
+      const flags = re.flags.includes("g") ? re.flags : re.flags + "g";
+      const global = new RegExp(re.source, flags);
+      let match;
+      while ((match = global.exec(extractedText))) {
+        const before = extractedText.slice(Math.max(0, match.index - 32), match.index);
+        if (/\b(no|not|missing|without|absent|lacks)\b[^.]{0,24}$/i.test(before)) return true;
+        if (match.index === global.lastIndex) global.lastIndex += 1;
+      }
+      return false;
+    });
+    const checked = denied ? false : (previous[d.id] || detected);
     return '<label class="doc"><input type="checkbox" value="' + d.id + '" ' + (checked ? "checked" : "") + ' /><span>' + d.label + (detected ? '<small class="badge">Seen in the upload</small>' : '<small>Confirm if it is in the paper file</small>') + '</span></label>';
   }).join("");
   const names = programs.map((id) => PROGRAM_LABEL[id]).join(" + ");
@@ -76,8 +100,9 @@ async function extractAll(files) {
     else parts.push("[Image filed: " + file.name + ". Text was not read from this image. Confirm the documents below.]");
   }
   extractedText = parts.filter(Boolean).join("\n\n");
-  $("extracted").textContent = extractedText || "No text layer found.";
+  $("extracted").textContent = extractedText || "No text layer found. A photo or scan with no text was not read. Tick the documents that are actually in the paper file, then review.";
   renderDocs();
+  if (extractedText && typeof review === "function") review();
 }
 
 async function pdfText(file) {
@@ -134,6 +159,11 @@ function loadSample() {
 }
 
 function review() {
+  if (typeof reviewFile !== "function" || typeof RULES === "undefined") {
+    $("score").textContent = "Review engine did not load. Reload the page.";
+    return;
+  }
+  if (typeof readDroppedFile === "function") readDroppedFile(extractedText);
   const input = readInput();
   const result = reviewFile(input);
   const c = result.counts;
@@ -141,7 +171,8 @@ function review() {
   $("findings").innerHTML = result.findings.map((f) => '<article class="finding ' + f.severity + '"><div class="meta">' + f.severity + " \u00b7 " + f.program + '</div><h3>' + f.title + '</h3><p><strong>In the file.</strong> ' + f.found + '</p><p><strong>Should look like.</strong> ' + f.should + '</p><p><strong>Manager correction.</strong> ' + f.correction + '</p><p class="hint">' + f.cite + '</p></article>').join("");
   const pack = RULES.stacking[input.state] || RULES.stacking.OTHER;
   $("modelPanel").innerHTML = "<h2>" + pack.name + "</h2><p class=\"hint\">" + pack.revised + ". " + pack.note + "</p><ol class=\"stack\">" + pack.movein.map((item) => "<li>" + item + "</li>").join("") + "</ol><h3>Program pieces that sit in that order</h3><ul class=\"stack\"><li>Tax Credit: TIC, student certification at move-in and every year, six-month initial lease, 140% Available Unit Rule at recertification.</li><li>HUD: 50059, HUD-9887, EIV at recertification, citizenship declaration. 2026 passbook rate 0.40%. Asset self-certification through $52,787. Dependent deduction $500. Elderly or disabled deduction $550, which is not a Tax Credit deduction.</li><li>HOME: income at occupancy under 24 CFR 5.609, HOME rent cap, one-year lease unless both parties agree shorter, no prohibited lease terms. Layered Idaho units need a HOME certification and a TIC.</li><li>RD: Form RD 3560-8, annual certification, verifications behind the form.</li><li>Section 202: age 62 proof for the qualifying member, then the HUD certification packet.</li></ul>";
-  $("letter").innerText = buildLetter(input, result);
+  const memo = typeof specialistMemo === "function" ? "\n\n" + specialistMemo(input, result, extractedText) : "";
+  $("letter").innerText = buildLetter(input, result) + memo;
 }
 
 function showTab(name) {
